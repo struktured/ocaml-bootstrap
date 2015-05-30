@@ -117,6 +117,7 @@ let print s = Printf.printf "[appy_profile]: %s\n" s
 
 let checkout_profile profile url =
   let profile_dir = profile_dir profile in 
+  FileUtil.rm ~recurse:true ~force:FileUtil.Force [profiles_dir];
   Git.clone ~target:profile_dir ~branch_or_tag:profile url
 
 let add_pins profile =

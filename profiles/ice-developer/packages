@@ -1,6 +1,0 @@
-re csv cmdliner extlib core async
-containers sequence gen
-ppx_deriving ppx_deriving_protobuf
-lacaml oml gpr
-merlin ocp-indent utop
-fileutils prob-cache
