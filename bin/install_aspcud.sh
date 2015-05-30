@@ -47,14 +47,30 @@ fetch_package() {
 
  wget --no-check-certificate --output-document=${compressed_pkg} ${url}
 
+ if [ $? -gt 0 ]; then
+    echo Failed to fetch package from \"${url}\".
+    exit 1
+ fi
+
 }
 
 
 decompress(){
-  gzip -f -d ${compressed_pkg}
+ gzip -f -d ${compressed_pkg}
 
-  tar xvf ${filename}.tar
-  
+ if [ $? -gt 0 ]; then
+    echo Failed to unzip package \"${compressed_pkg}\".
+    exit 1
+ fi
+
+ tar xvf ${filename}.tar
+ 
+ if [ $? -gt 0 ]; then
+    echo Failed to untar package \"${filename}.tar\".
+    exit 1
+ fi
+
+ 
 }
 
 preinstall_clean() {
@@ -65,6 +81,10 @@ install() {
  
   if [ ! -d "${target}/bin" ]; then
     mkdir ${target}/bin
+    if [ $? -gt 0 ]; then
+      echo Failed to make installation directory \"${target}/bin\"
+      exit 1
+    fi
   fi
 
   echo Copying binaries to ${target}
@@ -124,7 +144,7 @@ res=`which aspcud`
 
 if [ ! -z "${res}" ]; then
   echo aspcud already installed at \"${res}\", aborting.
-  exit 1
+  exit 0
 fi
 
 }
