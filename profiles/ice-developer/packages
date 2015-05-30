@@ -3,4 +3,4 @@ containers sequence gen
 ppx_deriving ppx_deriving_protobuf
 lacaml oml gpr
 merlin ocp-indent utop
-fileutils
+fileutils prob-cache
