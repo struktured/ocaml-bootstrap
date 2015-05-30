@@ -1,0 +1,4 @@
+ocamlscript git https://github.com/struktured/ocamlscript#ice-stable
+async git https://github.com/struktured/async#ice-stable
+oml git https://github.com/struktured/oml#ice-stable
+prob-cache git https://github.com/struktured/ocaml-prob-cache#ice-stable
