@@ -143,7 +143,8 @@ check_if_installed() {
 res=`which aspcud`
 
 if [ ! -z "${res}" ]; then
-  echo aspcud already installed at \"${res}\", aborting.
+  echo aspcud already installed at \"${res}\", checking environment setup then aborting.
+  setup_env
   exit 0
 fi
 
