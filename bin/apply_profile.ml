@@ -22,12 +22,23 @@ let working_dir =
             
 let _ = Printf.printf "Working directory: %s\n" working_dir
 
-let profiles_dir = FilePath.concat working_dir "profiles"
+let profiles_default_url = 
+  try
+    Unix.getenv "OCAML_PROFILES_URL"  
+ with Not_found -> "https://github.com/struktured/ocaml-profiles"
+
+let profiles_url =
+  let doc = "Specifies a ocam profile repository to fetch profiles from. " ^
+            "OCAML_PROFILES_URL environment variable overrides the default value." in
+  Arg.(value & (opt string) profiles_default_url & info ["r";"repo"] ~doc ~docv:"URL")
+
 let opam_default = FilePath.concat home ".opam"
 let pinned_file_name = "pinned"
 let package_file_name = "packages"
 let compiler_version_default = "4.02.1"
 let no_ssl_verify_opt = "GIT_SSL_NO_VERIFY=true"
+
+let profiles_dir = "profiles"
 let profile_dir profile = FilePath.concat profiles_dir profile
 
 let pinned_config_file profile = FilePath.concat (profile_dir profile)
@@ -72,7 +83,6 @@ let pins profile =
              {name;kind=Kind.of_string kind;target} | 
                l -> failwith("unxpected number of columns for line: " ^
                                  String.concat " " l))
-
 let read_all (dir:string) = 
   let dir = Unix.opendir dir in
   let rec iter l = try 
@@ -81,10 +91,13 @@ let read_all (dir:string) =
       entry::(iter l) with End_of_file -> l in
   iter []
 
+(* TODO not implemented *)
+let get_profiles () = ["None"]
+
 let profile =
-  let doc = "Specifies a profile to apply to the repository. " ^
-            "Possible choices are: \n[" ^ 
-            (String.concat ", " @@ read_all profiles_dir) ^ "]." in
+  let doc = "Specifies a profile to apply to the repository. "
+            (* ^ "Possible choices are: \n[" ^ 
+            (String.concat ", " @@ get_profiles ()) ^ "]." *) in
   Arg.(required & pos 0 (some string) None & info [] ~doc ~docv:"PROFILE")
 
 let opam_repo_target =
@@ -101,6 +114,10 @@ let compiler_version =
 open Shell.Infix
 
 let print s = Printf.printf "[appy_profile]: %s\n" s
+
+let checkout_profile profile url =
+  let profile_dir = profile_dir profile in 
+  Git.clone ~target:profile_dir ~branch_or_tag:profile url
 
 let add_pins profile =
   let pins = pins profile in
@@ -130,16 +147,17 @@ let install_packages profile =
                              install_cmd ret) else
   `Ok "Done installing packages"
 
-let run profile opam_repo_target compiler_version =
+let run profile opam_repo_target compiler_version profiles_url =
   print @@ Printf.sprintf "\"%s\" to opam repository \"%s\" with
   compiler version %s...\n" profile opam_repo_target compiler_version;
   opam_switch profile compiler_version >>= fun s -> print s;
+  ignore(checkout_profile profile profiles_url);
   add_pins profile >>= fun s -> print s;
   install_packages profile
 
 let cmd =
-  let doc = "Apply a profile to a target opam repository" in
-  Term.(ret (pure run $ profile $ opam_repo_target $ compiler_version)),
+  let doc = "Apply an ocaml profile to a target opam repository" in
+  Term.(ret (pure run $ profile $ opam_repo_target $ compiler_version $ profiles_url)),
   Term.info "apply_profile" ~version:"1.0" ~doc
 
 let () = match Term.eval cmd with `Error _ -> exit 1 | _ -> exit 0
