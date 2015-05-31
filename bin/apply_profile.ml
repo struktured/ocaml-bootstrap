@@ -27,10 +27,10 @@ let profiles_default_url =
     Unix.getenv "OCAML_PROFILES_URL"  
  with Not_found -> "https://github.com/struktured/ocaml-profiles"
 
-let profiles_url =
+let profiles_repo_url =
   let doc = "Specifies a ocam profile repository to fetch profiles from. " ^
-            "OCAML_PROFILES_URL environment variable overrides the default value." in
-  Arg.(value & (opt string) profiles_default_url & info ["r";"repo"] ~doc ~docv:"URL")
+            "The OCAML_PROFILES_URL environment variable overrides the default value." in
+  Arg.(value & (opt string) profiles_default_url & info ["r";"repo"] ~doc ~docv:"REPO_URL")
 
 let opam_default = FilePath.concat home ".opam"
 let pinned_file_name = "pinned"
@@ -38,14 +38,23 @@ let package_file_name = "packages"
 let compiler_version_default = "4.02.1"
 let no_ssl_verify_opt = "GIT_SSL_NO_VERIFY=true"
 
-let profiles_dir = "profiles"
+let profiles_dir = ".apply-profiles"
+let profiles_file_name = "profiles"
+
 let profile_dir profile = FilePath.concat profiles_dir profile
 
 let pinned_config_file profile = FilePath.concat (profile_dir profile)
     pinned_file_name
 
+let profiles_config_file profile = FilePath.concat (profile_dir profile)
+    profiles_file_name
+
 let pins profile =
   let file = pinned_config_file profile in open_in file |>
+  Std.input_list
+
+let profiles profile =
+  let file = profiles_config_file profile in open_in file |>
   Std.input_list
 
 let package_config_file profile = FilePath.concat (profile_dir profile)
@@ -102,8 +111,8 @@ let profile =
 
 let opam_repo_target =
   let doc = "Specifies the target opam repository, typically ~/.opam" in
-  Arg.(value & opt string opam_default & info ["o";"target"] ~doc
-         ~docv:"TARGET")
+  Arg.(value & opt string opam_default & info ["o";"opam-target"] ~doc
+         ~docv:"OPAM_TARGET")
 
 let compiler_version =
   let doc = "Specifies the ocaml compiler version, defaults to " ^
@@ -134,6 +143,17 @@ let add_pins profile =
        | `Error _ as e -> e, `Stop
        | `Ok _ -> (remove_add pin), `Continue) (`Ok "apply_pins: start") pins
 
+type profile = {name:string;url:string}
+
+let load_profiles profile url =
+  let profiles = profiles profile in
+  let splitter = Re_posix.compile_pat " " |> fun re -> Re.split re in
+  CCList.map splitter profiles |> CCList.filter_map
+  (function 
+    | [profile'] -> Some {name=profile'; url}
+    | profile'::(url'::_) -> Some {name=profile';url=url'}
+    | _ -> None) 
+
 let opam_switch profile compiler_version =
   let switch_cmd = no_ssl_verify_opt ^ " opam switch " ^ compiler_version in
   Shell.system switch_cmd >>= fun _ ->
@@ -148,17 +168,39 @@ let install_packages profile =
                              install_cmd ret) else
   `Ok "Done installing packages"
 
-let run profile opam_repo_target compiler_version profiles_url =
+module StringSet = CCSet.Make(String)
+
+let ok_or_fail ret = match ret with 
+| `Ok o -> o 
+| `Error(b,s) -> failwith(string_of_bool b ^ ": " ^ s) 
+| _ -> failwith("Unexpected variant tag")
+
+let rec run profile opam_repo_target compiler_version profiles_url =
+ let add_profiles added_profiles =
+  let profiles = load_profiles profile profiles_url in
+  CCList.fold_while 
+    (fun set (profile:profile) ->
+      match StringSet.exists ((=) profile.name) added_profiles with
+      | true -> print @@ "WARNING: Skipping profile \"" ^ profile.name ^ "to avoid cycling!";
+       `Ok added_profiles, `Continue
+      | false -> begin
+      let set = StringSet.add profile.name added_profiles in
+      match run profile.name opam_repo_target compiler_version profile.url
+      with 
+      | `Ok _  -> `Ok set, `Continue
+      |  e -> e, `Stop end) (`Ok added_profiles) profiles in
+
   print @@ Printf.sprintf "\"%s\" to opam repository \"%s\" with
   compiler version %s...\n" profile opam_repo_target compiler_version;
-  opam_switch profile compiler_version >>= fun s -> print s;
-  ignore(checkout_profile profile profiles_url);
-  add_pins profile >>= fun s -> print s;
-  install_packages profile
+  ignore(ok_or_fail @@ opam_switch profile compiler_version);
+  ignore(ok_or_fail @@ checkout_profile profile profiles_url);
+  let set = ok_or_fail @@ add_profiles StringSet.empty in
+  ignore(ok_or_fail @@ add_pins profile);
+  ignore(ok_or_fail @@ install_packages profile);`Ok set
 
 let cmd =
   let doc = "Apply an ocaml profile to a target opam repository" in
-  Term.(ret (pure run $ profile $ opam_repo_target $ compiler_version $ profiles_url)),
+  Term.(ret (pure run $ profile $ opam_repo_target $ compiler_version $ profiles_repo_url)),
   Term.info "apply_profile" ~version:"1.0" ~doc
 
 let () = match Term.eval cmd with `Error _ -> exit 1 | _ -> exit 0
