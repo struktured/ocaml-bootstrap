@@ -36,16 +36,25 @@ get_url() {
   fi
 }
 
+no_check_certificate_arg() {
+  no_check_certificate=""
+  for arg in ${args}
+  do
+    if [ "${arg}" = "--no-check-certificate" ]; then
+      no_check_certificate=${arg}
+    fi
+  done
+}
 
 fetch_package() {
 
-  local base=$(basename ${url})
-  base="${base%.*}"
-  filename="${base%.*}"
+ local base=$(basename ${url})
+ base="${base%.*}"
+ filename="${base%.*}"
 
-  compressed_pkg=${filename}.tar.gz
+ compressed_pkg=${filename}.tar.gz
 
- wget --no-check-certificate --output-document=${compressed_pkg} ${url}
+ wget ${no_check_certificate} --output-document=${compressed_pkg} ${url}
 
  if [ $? -gt 0 ]; then
     echo Failed to fetch package from \"${url}\".
@@ -149,6 +158,7 @@ fi
 }
 
 run() {
+  no_check_certificate_arg
   get_target
   get_url
   fetch_package
