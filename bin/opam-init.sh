@@ -13,7 +13,7 @@ fi
 SCRIPTS_DIR=$(dirname $0)
 
 # Install aspcud if we need to first
-$SCRIPTS_DIR/install-local/install_aspcud.sh $ROOT_DIR
+$SCRIPTS_DIR/install-local/install-aspcud.sh $ROOT_DIR
 if [ $? -gt 0 ]; then
     echo "ERROR: Failed to install aspcud, which opam requires. Cannot continue."
     echo "See http://sourceforge.net/projects/potassco/files/aspcud/ to install manually"
