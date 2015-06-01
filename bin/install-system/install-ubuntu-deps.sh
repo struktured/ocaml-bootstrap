@@ -1,2 +1,2 @@
 #!/bin/sh
-sudo apt-get install m4 libgsl0-dev libpcre3-dev aspcud
+sudo apt-get -y install curl m4 libgsl0-dev libpcre3-dev aspcud
