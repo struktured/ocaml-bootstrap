@@ -40,7 +40,8 @@ If you decide to install these manually, the most important packages are ```pkg-
 To start the bootstrap simply run:
 
 ```
-ocaml-bootstrap/bin/opam-bootstrap.sh 
+cd ocaml-bootstrap
+bin/opam-bootstrap.sh 
 ```
 
 which installs the opam binary into $HOME/local/bin by default. Type "--help" to see more options. This command
@@ -57,7 +58,7 @@ If you want to install some more ocaml packages or you're interested in using
 You can install ocaml profiles with another bootstrap command:
 
 ```
-ocaml-bootstrap/bin/ocaml-profiles-bootstrap.sh 
+bin/ocaml-profiles-bootstrap.sh 
 ```
 
 Now run
