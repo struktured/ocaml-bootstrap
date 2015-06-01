@@ -9,7 +9,7 @@ end
 open Cmdliner 
 open Shell_support
 
-let target_default = Shell.opam_bin_root ()
+let target_default = Shell.opam_system_root ()
 let target =
   let doc = "Specifies the target installation directory." in
   Arg.(value & opt string target_default & info ["o";"target"] ~doc
