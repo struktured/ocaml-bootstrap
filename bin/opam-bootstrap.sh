@@ -216,7 +216,7 @@ show_help() {
   echo "    "bin/install-system/install-macport-deps.sh \(for osx+macport users\)
   echo
   echo Contact:
-  echo "  "Visit https://git@github.com/struktured/ocaml-bootstrap for more info.
+  echo "  "Visit https://github.com/struktured/ocaml-bootstrap for more info.
   echo
 
 }
