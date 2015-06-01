@@ -13,7 +13,7 @@ fi
 SCRIPTS_DIR=$(dirname $0)
 
 # Install aspcud if we need to first
-$SCRIPTS_DIR/install_aspcud.sh $ROOT_DIR
+$SCRIPTS_DIR/native-local/install_aspcud.sh $ROOT_DIR
 if [ $? -gt 0 ]; then
     echo "ERROR: Failed to install aspcud, which opam requires. Cannot continue."
     echo "See http://sourceforge.net/projects/potassco/files/aspcud/ to install manually"
@@ -84,15 +84,6 @@ if [ $? -gt 0 ]; then
 fi
 
 eval `opam config env`
-
-echo "Pinning customized ocamlscript version"
-opam pin add -y -k git ocamlscript https://github.com/struktured/ocamlscript#stable
-
-echo "Pinning shell support"
-opam pin add -y -k git shell-support https://github.com/struktured/ocaml-shell-support#stable
-
-echo "Installing some basic packages"
-opam install -y extlib re cmdliner fileutils containers
 
 echo ---------------------------------------------------
 echo 
