@@ -2,7 +2,7 @@
 
 arg0=$1
 get_target() {
-  local target_default=$HOME/.opam/system
+  local target_default=$HOME/local
 
   target=${arg0}
   if [ -z "${target}" ]; then
