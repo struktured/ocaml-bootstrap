@@ -80,7 +80,7 @@ preinstall_clean() {
 install() {
  
   if [ ! -d "${target}/bin" ]; then
-    mkdir ${target}/bin
+    mkdir -p ${target}/bin
     if [ $? -gt 0 ]; then
       echo Failed to make installation directory \"${target}/bin\"
       exit 1
@@ -101,7 +101,7 @@ setup_env() {
   local solver_string="export ${solver_var}=${solver_bin}"
 
   export PATH=$PATH:${solver_path}
-
+  export ${solver_string}
   local path_string_cmt="# Add location of aspcud solver to path"
   local path_string="export PATH=\$PATH:${solver_path}"
   profile=""
@@ -135,7 +135,6 @@ setup_env() {
     echo ${path_string} >> ${profile}
   fi
 
-
 }
 
 check_if_installed() {
@@ -143,8 +142,7 @@ check_if_installed() {
 res=`which aspcud`
 
 if [ ! -z "${res}" ]; then
-  echo aspcud already installed at \"${res}\", checking environment setup then aborting.
-  setup_env
+  echo aspcud already installed at \"${res}\".
   exit 0
 fi
 
