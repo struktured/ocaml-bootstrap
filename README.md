@@ -8,7 +8,7 @@ and [ocaml-profiles](https://github.com/struktured/ocaml-profiles).
 
 ## Layout
 
-The top level ```bin``` folder contains the main script ```bin/opam-bootsrap.sh```, while the ```bin/install-system``` 
+The top level ```bin``` folder contains the main script ```bin/opam-bootstrap.sh```, while the ```bin/install-system``` 
 folder has scripts to install system level packages natively, and
 ```bin/install-local``` has various scripts to install system packages without super user access
 (most of which requires [ocamlscript](https://github.com/struktured/ocamlscript) to execute, 
