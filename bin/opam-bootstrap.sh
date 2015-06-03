@@ -4,7 +4,6 @@ OPAM_VERSION=1.2.2
 
 DEFAULT_ROOT_DIR=$HOME/local
 
-
 SCRIPTS_DIR=$(dirname $0)
 
 args="$@"
@@ -17,7 +16,7 @@ root_dir_arg() {
       break
     fi
   done
-   
+
   if [ -z "${ROOT_DIR}" ]; then
     echo No target specified, will install opam and native dependencies into \"${DEFAULT_ROOT_DIR}\"
     ROOT_DIR=$DEFAULT_ROOT_DIR
@@ -122,11 +121,17 @@ init_opam() {
 setup_env() {
 
   local opam_bin_root=${ROOT_DIR}/bin
+  local opam_lib_root=${ROOT_DIR}/lib
 
   export PATH=$PATH:${opam_bin_root}
+  export LIBRARY_PATH=$LIBRARY_PATH:${opam_lib_root}
 
   local path_string_cmt="# Add location of opam binary"
   local path_string="export PATH=\$PATH:${opam_bin_root}"
+
+  local lib_string_cmt="# Add location of opam binary"
+  local lib_string="export LIBRARY_PATH=\$LIBRARY_PATH:${opam_lib_root}"
+
   profile=""
   if [ -e "$HOME/.bash_profile" ]; then
     profile=$HOME/.bash_profile
@@ -143,14 +148,24 @@ setup_env() {
   fi
 
   if [ -e "${profile}" ]; then
-    path_txt=`grep -o ${opam_bin_root} ${profile}`
+    path_txt=`grep -o "${path_string}" ${profile}`
 
     if [ -z "${path_txt}" ]; then
       echo "Adding \"${opam_bin_root}\" to path in ${profile}"
       echo ${path_string_cmt} >> ${profile}
       echo ${path_string} >> ${profile}
     fi
+
+    library_txt=`grep -o "${lib_string}" ${profile}`
+
+    if [ -z "${library_txt}" ]; then
+      echo "Adding \"${opam_lib_root}\" to path in ${profile}"
+      echo ${lib_string_cmt} >> ${profile}
+      echo ${lib_string} >> ${profile}
+    fi
   fi
+
+
 }
 
 check_if_installed() {
@@ -163,7 +178,7 @@ check_if_installed() {
     for arg in ${args}
     do
       if [ "${arg}" = "--force" ]; then
-	force="true"
+        force="true"
       fi
     done
 
