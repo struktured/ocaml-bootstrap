@@ -35,7 +35,7 @@ no_check_certificate_arg() {
 
 install_aspcud() {
   # Install aspcud if we need to first
-  $SCRIPTS_DIR/install-local/install-aspcud.sh $ROOT_DIR ${no_check_certificate}
+  . $SCRIPTS_DIR/install-local/install-aspcud.sh $ROOT_DIR ${no_check_certificate}
 
   if [ $? -gt 0 ]; then
     echo "ERROR: Failed to install aspcud, which opam requires. Cannot continue."
