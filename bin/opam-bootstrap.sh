@@ -152,15 +152,19 @@ setup_env() {
 
   export PATH=$PATH:${opam_bin_root}
   export LIBRARY_PATH=$LIBRARY_PATH:${opam_lib_root}
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBRARY_PATH
 
-  local path_string_cmt="# Add location of opam binary"
+  local path_string_cmt="# Add location of opam binary to PATH"
   local path_string="export PATH=\$PATH:${opam_bin_root}"
   local path_string_search="export PATH=\\$PATH:${opam_bin_root}"
 
-  local lib_string_cmt="# Add location of opam lib root"
+  local lib_string_cmt="# Add location of opam lib root to LIBRARY_PATH"
   local lib_string="export LIBRARY_PATH=\$LIBRARY_PATH:${opam_lib_root}"
   local lib_string_search="export LIBRARY_PATH=\\$LIBRARY_PATH:${opam_lib_root}"
 
+  local ld_string_cmt="# Add location of opam lib root to LD_LIBRARY_PATH"
+  local ld_string="export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${opam_lib_root}"
+  local ld_string_search="export LD_LIBRARY_PATH=\\$LIBRARY_PATH:${opam_lib_root}"
 
   profile=""
   if [ -e "$HOME/.bash_profile" ]; then
@@ -181,7 +185,7 @@ setup_env() {
     path_txt=`grep -o "${path_string_search}" ${profile}`
 
     if [ -z "${path_txt}" ]; then
-      echo Adding \"${opam_bin_root}\" to path in ${profile}
+      echo Adding \"${opam_bin_root}\" to PATH in ${profile}
       echo ${path_string_cmt} >> ${profile}
       echo ${path_string} >> ${profile}
     else
@@ -191,10 +195,19 @@ setup_env() {
     library_txt=`grep -o "${lib_string_search}" ${profile}`
 
     if [ -z "${library_txt}" ]; then
-      echo "Adding \"${opam_lib_root}\" to path in ${profile}"
+      echo "Adding \"${opam_lib_root}\" to LIBRARY_PATH in ${profile}"
       echo ${lib_string_cmt} >> ${profile}
       echo ${lib_string} >> ${profile}
     fi
+
+    ld_txt=`grep -o "${ld_string_search}" ${profile}`
+
+    if [ -z "${ld_txt}" ]; then
+      echo "Adding \"${opam_lib_root}\" to LD_LIBRARY_PATH in ${profile}"
+      echo ${ld_string_cmt} >> ${profile}
+      echo ${ld_string} >> ${profile}
+    fi
+
   fi
 
 
@@ -226,7 +239,7 @@ check_if_installed() {
 show_done() {
   echo -------------------------------------------------------------------------------
   echo
-  echo ^Done^ OCaml and Opam installed! *Relogin your shell* to update your
+  echo Done! OCaml and opam installed! *Relogin your shell* to update your
   echo environment. Optionally, you may choose to bootstrap more packages or native
   echo dependencies, but you need ocamlscript and ocaml-profiles first. To install, run
   echo
