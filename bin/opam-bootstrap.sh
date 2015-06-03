@@ -46,26 +46,24 @@ install_aspcud() {
   local aspcud_bin=`which aspcud`
   local aspcud_dir=$(dirname ${aspcud_bin})
 
-  if [ -z "${aspcud_bin}" ]; then 
-    if [ -e "${aspcud_bin}" ]; then 
-     echo Found ascpud at "${ascpud_bin}". Exporting...
-     export PATH=$PATH:${aspcud_dir}
-     export OPAMEXTERNALSOLVER=${aspcud_bin}
-    else
-     aspcud_bin=$ROOT_DIR/bin/aspcud
-     aspcud_dir=$ROOT_DIR/bin
-     if [ -e "${aspcud_bin}" ]; then
-       echo Found solver in opam root directory at "${aspcud_dir}". Exporting...
-       export PATH=$PATH:${aspcud_dir}
-       export OPAMEXTERNALSOLVER=${aspcud_bin}
-     else 
-       echo WARNING: aspcud not found. Checking for external solver...
-       if [ -e "$OPAMEXTERNALSOLVER" ]; then 
-	 echo Found external solver "$OPAMEXTERNALSOLVER" 
-       else
-	 echo ERROR: Cannot install aspcud and no external solver found. Cannot continue.
-	 exit 1
-       fi
+  if [ -e "${aspcud_bin}" ]; then 
+    echo Found ascpud at "${ascpud_bin}". Exporting...
+    export PATH=$PATH:${aspcud_dir}
+    export OPAMEXTERNALSOLVER=${aspcud_bin}
+  else
+    aspcud_bin=$ROOT_DIR/bin/aspcud
+    aspcud_dir=$ROOT_DIR/bin
+    if [ -e "${aspcud_bin}" ]; then
+      echo Found solver in opam root directory at "${aspcud_dir}". Exporting...
+      export PATH=$PATH:${aspcud_dir}
+      export OPAMEXTERNALSOLVER=${aspcud_bin}
+    else 
+      echo WARNING: aspcud not found. Checking for external solver...
+      if [ -e "$OPAMEXTERNALSOLVER" ]; then 
+        echo Found external solver "$OPAMEXTERNALSOLVER". Will try using it.
+      else
+	echo ERROR: Cannot install aspcud and no external solver found. Cannot continue.
+	exit 1
       fi
     fi
   fi
