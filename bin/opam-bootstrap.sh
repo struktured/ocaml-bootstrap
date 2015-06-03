@@ -35,12 +35,39 @@ no_check_certificate_arg() {
 
 install_aspcud() {
   # Install aspcud if we need to first
-  . $SCRIPTS_DIR/install-local/install-aspcud.sh $ROOT_DIR ${no_check_certificate}
-
+  $SCRIPTS_DIR/install-local/install-aspcud.sh $ROOT_DIR ${no_check_certificate}
+  
   if [ $? -gt 0 ]; then
     echo "ERROR: Failed to install aspcud, which opam requires. Cannot continue."
     echo "See http://sourceforge.net/projects/potassco/files/aspcud/ to install manually"
     exit 1
+  fi
+
+  local aspcud_bin=`which aspcud`
+  local aspcud_dir=$(dirname ${aspcud_bin})
+
+  if [ -z "${aspcud_bin}" ]; then 
+    if [ -e "${aspcud_bin}" ]; then 
+     echo Found ascpud at "${ascpud_bin}". Exporting...
+     export PATH=$PATH:${aspcud_dir}
+     export OPAMEXTERNALSOLVER=${aspcud_bin}
+    else
+     aspcud_bin=$ROOT_DIR/bin/aspcud
+     aspcud_dir=$ROOT_DIR/bin
+     if [ -e "${aspcud_bin}" ]; then
+       echo Found solver in opam root directory at "${aspcud_dir}". Exporting...
+       export PATH=$PATH:${aspcud_dir}
+       export OPAMEXTERNALSOLVER=${aspcud_bin}
+     else 
+       echo WARNING: aspcud not found. Checking for external solver...
+       if [ -e "$OPAMEXTERNALSOLVER" ]; then 
+	 echo Found external solver "$OPAMEXTERNALSOLVER" 
+       else
+	 echo ERROR: Cannot install aspcud and no external solver found. Cannot continue.
+	 exit 1
+       fi
+      fi
+    fi
   fi
 
 }
@@ -128,9 +155,12 @@ setup_env() {
 
   local path_string_cmt="# Add location of opam binary"
   local path_string="export PATH=\$PATH:${opam_bin_root}"
+  local path_string_search="export PATH=\\$PATH:${opam_bin_root}"
 
-  local lib_string_cmt="# Add location of opam binary"
+  local lib_string_cmt="# Add location of opam lib root"
   local lib_string="export LIBRARY_PATH=\$LIBRARY_PATH:${opam_lib_root}"
+  local lib_string_search="export LIBRARY_PATH=\\$LIBRARY_PATH:${opam_lib_root}"
+
 
   profile=""
   if [ -e "$HOME/.bash_profile" ]; then
@@ -148,15 +178,17 @@ setup_env() {
   fi
 
   if [ -e "${profile}" ]; then
-    path_txt=`grep -o "${path_string}" ${profile}`
+    path_txt=`grep -o "${path_string_search}" ${profile}`
 
     if [ -z "${path_txt}" ]; then
-      echo "Adding \"${opam_bin_root}\" to path in ${profile}"
+      echo Adding \"${opam_bin_root}\" to path in ${profile}
       echo ${path_string_cmt} >> ${profile}
       echo ${path_string} >> ${profile}
-    fi
+    else
+      echo Found "${path_txt}" no need to edit your profile
+    fi 
 
-    library_txt=`grep -o "${lib_string}" ${profile}`
+    library_txt=`grep -o "${lib_string_search}" ${profile}`
 
     if [ -z "${library_txt}" ]; then
       echo "Adding \"${opam_lib_root}\" to path in ${profile}"
@@ -242,8 +274,6 @@ maybe_show_help() {
     if [ "${arg}" = "--help" ]; then
       show_help
       exit 1
-    else
-      echo "wtf: " ${arg}
     fi
   done
 }
