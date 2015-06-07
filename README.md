@@ -1,6 +1,6 @@
 # ocaml-bootstrap
 ## About
-This project aims to streamline installation of OCaml and opam for the logged in user with minimal superaccess
+This project aims to streamline installation of OCaml and opam for the logged in user with minimal superuser
 access. It's based on the opam bootstrapping build script but adds a few extra phases like checking for 
 and installing ```aspcud```, editing your local shell profile to a custom OPAM location, and a path to install 
 more (native) packages via [ocamlscript](https://github.com/struktured/ocamlscript) 
