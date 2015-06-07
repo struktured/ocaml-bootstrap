@@ -52,7 +52,6 @@ fetch_package() {
  local base2="${base%.*}"
  filename="${base2%.*}"
 
- echo filename:${filename}
  compressed_pkg=${base}
 
  wget ${no_check_certificate} --output-document=${compressed_pkg} ${url}
@@ -69,7 +68,6 @@ decompress() {
 
   local last_extension=${compressed_pkg##*.}
 
-  echo filename: ${filename}, last_ext: ${last_extension}, ext: ${extension}
   if [[ "gz" = "${last_extension}" || "GZ" = "${last_extension}" ]]; then
     gzip -f -d ${compressed_pkg}
     if [ $? -gt 0 ]; then
@@ -101,7 +99,9 @@ decompress() {
 }
 
 preinstall_clean() {
-  rm -rf ${filename}/examples
+  if [ ! -z ${filename} ]; then 
+    rm -rf ${filename}*/*
+  fi
 }
 
 install() {
@@ -146,22 +146,23 @@ setup_env() {
       echo ${solver_string}
   fi
 
-  solver_var_txt=`grep -o ${solver_var} ${profile}`
+  if [ ! -z ${profile} ]; then 
+    solver_var_txt=`grep -o ${solver_var} ${profile}`
 
-  if [ -z "${solver_var_txt}" ]; then
-    echo "Adding \"${solver_var}\" to ${profile}" 
-    echo ${solver_string_cmt} >> ${profile}
-    echo ${solver_string} >> ${profile}
+    if [ -z "${solver_var_txt}" ]; then
+      echo "Adding \"${solver_var}\" to ${profile}" 
+      echo ${solver_string_cmt} >> ${profile}
+      echo ${solver_string} >> ${profile}
+    fi
+
+    path_txt=`grep -o \"${solver_path}\" ${profile}`
+
+    if [ -z "${path_txt}" ]; then
+      echo "Adding \"${solver_path}\" to path in ${profile}" 
+      echo ${path_string_cmt} >> ${profile}
+      echo ${path_string} >> ${profile}
+    fi
   fi
-
-  path_txt=`grep -o \"${solver_path}\" ${profile}`
-
-  if [ -z "${path_txt}" ]; then
-    echo "Adding \"${solver_path}\" to path in ${profile}" 
-    echo ${path_string_cmt} >> ${profile}
-    echo ${path_string} >> ${profile}
-  fi
-
 }
 
 check_if_installed() {
@@ -180,8 +181,8 @@ run() {
   get_target
   get_url
   fetch_package
+  preinstall_clean 
   decompress
-  preinstall_clean
   install
   setup_env
 }
