@@ -49,10 +49,10 @@ no_check_certificate_arg() {
 fetch_package() {
 
  local base=$(basename ${url})
- base="${base%.*}"
- filename="${base%.*}"
+ local base2="${base%.*}"
+ filename="${base2%.*}"
 
- compressed_pkg=${filename}.tar.gz
+ compressed_pkg=${base}
 
  wget ${no_check_certificate} --output-document=${compressed_pkg} ${url}
 
@@ -64,21 +64,38 @@ fetch_package() {
 }
 
 
-decompress(){
- gzip -f -d ${compressed_pkg}
+decompress() {
 
- if [ $? -gt 0 ]; then
-    echo Failed to unzip package \"${compressed_pkg}\".
-    exit 1
- fi
+  local last_extension=${compressed_pkg##*.}
 
- tar xvf ${filename}.tar
+  echo filename: ${filename}, last_ext: ${last_extension}, ext: ${extension}
+  if [[ "gz" = "${last_extension}" || "GZ" = "${last_extension}" ]]; then
+    gzip -f -d ${compressed_pkg}
+    if [ $? -gt 0 ]; then
+      echo Failed to uncompress package \"${compressed_pkg}\" with gzip.
+      exit 1
+    fi
+    compressed_pkg=${filename}.tar
+    last_extension=tar
+  fi
+
+  if [[ "zip" = "${last_extension}" || "ZIP" = "${last_extension}" ]]; then
+    unzip ${compressed_pkg}
+    if [ $? -gt 0 ]; then
+      echo Failed to uncompress package \"${compressed_pkg}\" with unzip.
+      exit 1
+    fi
+    last_extension=""
+  fi
+
+  if [[ "tar" = "${last_extension}" || "TAR" = "${last_extension}" ]]; then  
+    tar xvf ${filename}.${last_extension}
  
- if [ $? -gt 0 ]; then
-    echo Failed to untar package \"${filename}.tar\".
-    exit 1
+   if [ $? -gt 0 ]; then
+      echo Failed to untar package \"${filename}.tar\".
+     exit 1
+   fi
  fi
-
  
 }
 
