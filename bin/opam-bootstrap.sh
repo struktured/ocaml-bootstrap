@@ -1,6 +1,6 @@
 #!/bin/bash
 COMPILER_VERSION=4.02.1
-OPAM_VERSION=master
+OPAM_VERSION=cygwin-fixes
 
 DEFAULT_ROOT_DIR=$HOME/local
 
