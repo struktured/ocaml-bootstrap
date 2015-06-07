@@ -1,6 +1,6 @@
 #!/bin/bash
 COMPILER_VERSION=4.02.1
-OPAM_VERSION=1.2.2
+OPAM_VERSION=master
 
 DEFAULT_ROOT_DIR=$HOME/local
 
@@ -73,7 +73,7 @@ install_aspcud() {
 fetch_opam() {
   # Fetch and extract opam
   rm -rf opam-${OPAM_VERSION}*
-  wget ${no_check_certificate} https://github.com/ocaml/opam/archive/${OPAM_VERSION}.tar.gz -O opam-${OPAM_VERSION}.tar.gz
+  git clone --single-branch https://github.com/struktured/opam -b ${OPAM_VERSION} opam-${OPAM_VERSION}
 
   if [ $? -gt 0 ]; then
     echo "ERROR: Failed to fetch opam source. Cannot continue."
@@ -81,21 +81,6 @@ fetch_opam() {
   fi
 }
 
-uncompress_opam() {
-  gzip -d opam-${OPAM_VERSION}.tar.gz
-
-  if [ $? -gt 0 ]; then
-    echo "ERROR: Failed to unzip opam source. Cannot continue."
-    exit 1
-  fi
-
-  tar -xvf opam-${OPAM_VERSION}.tar
-
-  if [ $? -gt 0 ]; then
-    echo "ERROR: Failed to untar opam source. Cannot continue."
-    exit 1
-  fi
-}
 
 bootstrap_opam() {
   # Bootstrap ocaml, build and install opam
@@ -296,7 +281,6 @@ run() {
   no_check_certificate_arg
   install_aspcud
   fetch_opam
-  uncompress_opam
   bootstrap_opam
   setup_env
   init_opam
