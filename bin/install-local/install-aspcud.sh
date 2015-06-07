@@ -52,6 +52,7 @@ fetch_package() {
  local base2="${base%.*}"
  filename="${base2%.*}"
 
+ echo filename:${filename}
  compressed_pkg=${base}
 
  wget ${no_check_certificate} --output-document=${compressed_pkg} ${url}
@@ -114,7 +115,7 @@ install() {
   fi
 
   echo Copying binaries to ${target}
-  cp -f ${filename}/* ${target}/bin/
+  cp -f ${filename}*/* ${target}/bin/
 
 }
 
