@@ -134,7 +134,8 @@ init_opam() {
   echo "Initializing opam with compiler version ${COMPILER_VERSION}"
   # Initialize opam with compiler version
   opam init --switch=${COMPILER_VERSION} --comp=${COMPILER_VERSION} -y --auto-setup
-
+  opam switch ${COMPILER_VERSION}
+  eval `opam config env`
   if [ $? -gt 0 ]; then
     echo "ERROR: Couldn't initialize opam repository. Cannot continue."
     exit 1
