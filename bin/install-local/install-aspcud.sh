@@ -49,10 +49,10 @@ no_check_certificate_arg() {
 fetch_package() {
 
  local base=$(basename ${url})
- base="${base%.*}"
- filename="${base%.*}"
+ local base2="${base%.*}"
+ filename="${base2%.*}"
 
- compressed_pkg=${filename}.tar.gz
+ compressed_pkg=${base}
 
  wget ${no_check_certificate} --output-document=${compressed_pkg} ${url}
 
@@ -64,26 +64,44 @@ fetch_package() {
 }
 
 
-decompress(){
- gzip -f -d ${compressed_pkg}
+decompress() {
 
- if [ $? -gt 0 ]; then
-    echo Failed to unzip package \"${compressed_pkg}\".
-    exit 1
- fi
+  local last_extension=${compressed_pkg##*.}
 
- tar xvf ${filename}.tar
+  if [[ "gz" = "${last_extension}" || "GZ" = "${last_extension}" ]]; then
+    gzip -f -d ${compressed_pkg}
+    if [ $? -gt 0 ]; then
+      echo Failed to uncompress package \"${compressed_pkg}\" with gzip.
+      exit 1
+    fi
+    compressed_pkg=${filename}.tar
+    last_extension=tar
+  fi
+
+  if [[ "zip" = "${last_extension}" || "ZIP" = "${last_extension}" ]]; then
+    unzip ${compressed_pkg}
+    if [ $? -gt 0 ]; then
+      echo Failed to uncompress package \"${compressed_pkg}\" with unzip.
+      exit 1
+    fi
+    last_extension=""
+  fi
+
+  if [[ "tar" = "${last_extension}" || "TAR" = "${last_extension}" ]]; then  
+    tar xvf ${filename}.${last_extension}
  
- if [ $? -gt 0 ]; then
-    echo Failed to untar package \"${filename}.tar\".
-    exit 1
+   if [ $? -gt 0 ]; then
+      echo Failed to untar package \"${filename}.tar\".
+     exit 1
+   fi
  fi
-
  
 }
 
 preinstall_clean() {
-  rm -rf ${filename}/examples
+  if [ ! -z ${filename} ]; then 
+    rm -rf ${filename}*/*
+  fi
 }
 
 install() {
@@ -97,7 +115,7 @@ install() {
   fi
 
   echo Copying binaries to ${target}
-  cp -f ${filename}/* ${target}/bin/
+  cp -f ${filename}*/* ${target}/bin/
 
 }
 
@@ -128,22 +146,23 @@ setup_env() {
       echo ${solver_string}
   fi
 
-  solver_var_txt=`grep -o ${solver_var} ${profile}`
+  if [ ! -z ${profile} ]; then 
+    solver_var_txt=`grep -o ${solver_var} ${profile}`
 
-  if [ -z "${solver_var_txt}" ]; then
-    echo "Adding \"${solver_var}\" to ${profile}" 
-    echo ${solver_string_cmt} >> ${profile}
-    echo ${solver_string} >> ${profile}
+    if [ -z "${solver_var_txt}" ]; then
+      echo "Adding \"${solver_var}\" to ${profile}" 
+      echo ${solver_string_cmt} >> ${profile}
+      echo ${solver_string} >> ${profile}
+    fi
+
+    path_txt=`grep -o \"${solver_path}\" ${profile}`
+
+    if [ -z "${path_txt}" ]; then
+      echo "Adding \"${solver_path}\" to path in ${profile}" 
+      echo ${path_string_cmt} >> ${profile}
+      echo ${path_string} >> ${profile}
+    fi
   fi
-
-  path_txt=`grep -o \"${solver_path}\" ${profile}`
-
-  if [ -z "${path_txt}" ]; then
-    echo "Adding \"${solver_path}\" to path in ${profile}" 
-    echo ${path_string_cmt} >> ${profile}
-    echo ${path_string} >> ${profile}
-  fi
-
 }
 
 check_if_installed() {
@@ -162,8 +181,8 @@ run() {
   get_target
   get_url
   fetch_package
+  preinstall_clean 
   decompress
-  preinstall_clean
   install
   setup_env
 }

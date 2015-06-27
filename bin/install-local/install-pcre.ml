@@ -42,8 +42,9 @@ let fetch_package url =
 
 let decompress filename =
   let open Shell.Infix in
-  let chopped =  FilePath.chop_extension filename in
-  FileUtil.rm ~recurse:true ~force:FileUtil.Force [chopped; FilePath.chop_extension chopped];
+  let chopped =  FilePath.chop_extension filename |>
+                 FilePath.chop_extension in                  
+  FileUtil.rm ~recurse:true ~force:FileUtil.Force [chopped ^ "*"];
   Decompress.run filename
 
 let extract_tar filename =
