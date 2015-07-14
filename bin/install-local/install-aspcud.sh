@@ -128,7 +128,14 @@ setup_env() {
 
   local solver_var="OPAMEXTERNALSOLVER"
   local solver_path=${target}/bin
-  local solver_bin=${solver_path}/aspcud
+
+  local solver_bin=""
+  if [[ $os_type == *"win"* ]]; then
+    solver_bin=${solver_path/aspcud.sh
+  else
+    solver_bin=${solver_path}/aspcud
+  fi
+
   local solver_string_cmt="# Set explicit external solver location for opam installations"
   local solver_string="export ${solver_var}=${solver_bin}"
 
