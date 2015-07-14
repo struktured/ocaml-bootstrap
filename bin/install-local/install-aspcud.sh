@@ -16,7 +16,7 @@ get_target() {
 
 get_url_and_copy_resources() {
 
-  local os_type=$OSTYPE
+  os_type=$OSTYPE
   local mach_type=$MACHTYPE
  
   # Defaults to 64 bit linux 
@@ -152,11 +152,13 @@ setup_env() {
   elif [ -e "$HOME/.bashrc" ]; then
      profile=$HOME/.bashrc   
   else
-      echo "WARNING: No profile script found in your home directory to update!"
-      echo "Please manually add the following to your shell start script: "
+      echo "WARNING: No profile script found in your home directory to update!. Assuming \"~\.profile\"!"
+      echo "If this is not correct, Please manually add the following to your shell start script: "
       echo "---------------------------------------------------------------"
       echo ${path_string}
       echo ${solver_string}
+
+      profile=$HOME/.profile
   fi
 
   if [ ! -z ${profile} ]; then 
