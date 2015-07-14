@@ -11,8 +11,9 @@ get_target() {
   target_help="Specifies the target installation directory. Defaults to ${target_default}"
 }
 
+SCRIPTS_DIR=$(dirname $0)/../
 
-get_url() {
+get_url_and_copy_resources() {
 
   local os_type=$OSTYPE
   local mach_type=$MACHTYPE
@@ -32,6 +33,10 @@ get_url() {
     echo "MacOS detected."
     url="http://sourceforge.net/projects/potassco/files/aspcud/1.9.1/aspcud-1.9.1-macos-10.9.tar.gz"
   elif [[ $os_type == *"win"* ]]; then
+    local cygwin_aspcud=$SCRIPTS_DIR/cygwin_support/aspcud.sh
+    echo "Windows detected, copying aspcud script \"${cygwin_aspcud}\" to target folder \"${target}/bin\"."
+    mkdir -p $target/bin
+    cp -f ${cygwin_aspcud} $target/bin
     url="http://sourceforge.net/projects/potassco/files/aspcud/1.9.1/aspcud-1.9.1-win64.zip"
   fi
 }
@@ -179,7 +184,7 @@ fi
 run() {
   no_check_certificate_arg
   get_target
-  get_url
+  get_url_and_copy_resources
   fetch_package
   preinstall_clean 
   decompress
