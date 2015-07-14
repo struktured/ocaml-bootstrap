@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+SCRIPTS_DIR=$(dirname $0)/../
+
 arg0=$1
 get_target() {
   local target_default=$HOME/local
@@ -11,7 +13,6 @@ get_target() {
   target_help="Specifies the target installation directory. Defaults to ${target_default}"
 }
 
-SCRIPTS_DIR=$(dirname $0)/../
 
 get_url_and_copy_resources() {
 
@@ -33,7 +34,7 @@ get_url_and_copy_resources() {
     echo "MacOS detected."
     url="http://sourceforge.net/projects/potassco/files/aspcud/1.9.1/aspcud-1.9.1-macos-10.9.tar.gz"
   elif [[ $os_type == *"win"* ]]; then
-    local cygwin_aspcud=$SCRIPTS_DIR/cygwin_support/aspcud.sh
+    local cygwin_aspcud=$SCRIPTS_DIR/cygwin-support/aspcud.sh
     echo "Windows detected, copying aspcud script \"${cygwin_aspcud}\" to target folder \"${target}/bin\"."
     mkdir -p $target/bin
     cp -f ${cygwin_aspcud} $target/bin
