@@ -131,7 +131,7 @@ setup_env() {
 
   local solver_bin=""
   if [[ $os_type == *"win"* ]]; then
-    solver_bin=${solver_path/aspcud.sh
+    solver_bin=${solver_path}/aspcud.sh
   else
     solver_bin=${solver_path}/aspcud
   fi
