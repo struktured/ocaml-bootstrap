@@ -41,7 +41,7 @@ To start the bootstrap simply run:
 
 ```
 cd ocaml-bootstrap
-bin/opam-bootstrap.sh 
+bin/opam-init.sh 
 ```
 
 which installs the opam binary into $HOME/local/bin by default. Type "--help" to see more options. This command
