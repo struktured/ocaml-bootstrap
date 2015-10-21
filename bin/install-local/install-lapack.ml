@@ -15,7 +15,9 @@ let target =
   Arg.(value & opt string target_default & info ["o";"target"] ~doc
          ~docv:"DIR")
 
-let url_default  = "http://www.netlib.org/lapack/lapack-3.5.0.tgz"
+let url_default  =
+  "http://www.netlib.org/lapack/lapack-3.5.0.tgz;http://netlib.sandia.gov/lapack/lapack-3.5.0.tgz"
+
 let url =
   let doc = "Url to fetch lapack sources from" in
   Arg.(value & opt string url_default & info ["u";"url"] ~doc
@@ -67,8 +69,13 @@ let make ~profile ~target dir =
   Shell.system @@ "make install"
 
 let run target url profile =
+  let urls = Re.split (Re_posix.compile_pat ";" ) url in
   let open Shell.Infix in
-  fetch_package url >>= fun s -> print s;
+  CCList.fold_while (fun res url -> 
+  match fetch_package url with 
+    `Ok s as ok -> print s; ok, `Stop 
+  | `Error (_, e) as err -> print ("Error fetching from " ^ url ^ ": " ^ e);
+    err, `Continue) (`Ok "") urls >>= fun s ->
   decompress s >>= 
   extract_tar >>=
   make ~profile ~target
