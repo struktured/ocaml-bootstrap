@@ -133,7 +133,7 @@ init_opam() {
 
   echo "Initializing opam..."
   # Initialize opam with compiler version
-  opam init -y --auto-setup
+  opam init --comp=${COMPILER_VERSION} -y --auto-setup
   opam update
   opam switch ${COMPILER_VERSION}
   eval `opam config env`
