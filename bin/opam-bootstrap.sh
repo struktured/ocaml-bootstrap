@@ -131,9 +131,10 @@ init_opam() {
 
   export PATH=$PATH:$ROOT_DIR/bin:$ROOT_DIR/sbin
 
-  echo "Initializing opam with compiler version ${COMPILER_VERSION}"
+  echo "Initializing opam..."
   # Initialize opam with compiler version
-  opam init --switch=${COMPILER_VERSION} --comp=${COMPILER_VERSION} -y --auto-setup
+  opam init -y --auto-setup
+  opam update
   opam switch ${COMPILER_VERSION}
   eval `opam config env`
   if [ $? -gt 0 ]; then
