@@ -38,7 +38,8 @@ let make ~target dir =
   let open Shell.Infix in
   Shell.in_dir dir @@ fun dir ->
   Shell.system @@ 
-    "cmake" ^ " " ^ 
+    "cmake" ^ " " ^
+    "-DENABLE_f95=OFF" ^ " " ^
     "-DBUILD_STATIC_LIBS=ON" ^ " " ^
     "-DBUILD_SHARED_LIBS=ON"  ^ " " ^
     "-DCMAKE_INSTALL_PREFIX=" ^
