@@ -1,2 +1,2 @@
 #!/bin/sh
-brew install pkg-config pcre m4 gsl aspcud
+brew install pkg-config pcre cmake gsl aspcud
